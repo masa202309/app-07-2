@@ -543,6 +543,7 @@
                 if (this.isAnimating) return;
                 this.isAnimating = true;
                 this.actionCount++;
+                console.log('💃 [Robot] Dance action! Count:', this.actionCount);
 
                 let frame = 0;
                 const animate = () => {
@@ -567,6 +568,7 @@
                 if (this.isAnimating) return;
                 this.isAnimating = true;
                 this.actionCount++;
+                console.log('🦘 [Robot] Jump action! Count:', this.actionCount);
 
                 let frame = 0;
                 const startY = this.y;
@@ -594,6 +596,7 @@
                 if (this.isAnimating) return;
                 this.isAnimating = true;
                 this.actionCount++;
+                console.log('🌀 [Robot] Spin action! Count:', this.actionCount);
 
                 let frame = 0;
                 const animate = () => {
@@ -618,6 +621,7 @@
                 if (this.isAnimating) return;
                 this.isAnimating = true;
                 this.actionCount++;
+                console.log('👋 [Robot] Wave action! Count:', this.actionCount);
 
                 let frame = 0;
                 const animate = () => {
@@ -879,6 +883,7 @@
                     chatBox.removeChild(chatBox.lastChild);
 
                     // Extract action from response
+                    console.log('🤖 [OpenAI] Raw response:', aiResponse);
                     const actionMatch = aiResponse.match(/\[ACTION:([^\]]+)\]/);
                     let cleanResponse = aiResponse.replace(/\[ACTION:[^\]]+\]/g, '').trim();
 
@@ -887,7 +892,10 @@
                     // Execute action if specified
                     if (actionMatch) {
                         const actionStr = actionMatch[1];
+                        console.log('🤖 [OpenAI] Action extracted:', actionStr);
                         this.executeAction(actionStr);
+                    } else {
+                        console.log('🤖 [OpenAI] No action found in response');
                     }
 
                 } catch (error) {
@@ -908,6 +916,7 @@
 
             processCommandFallback(command) {
                 // Pattern matching for responses
+                console.log('🤖 [Fallback] Processing command:', command);
                 let response = 'それ面白そう！やってみるよ！ ✨';
                 let action = null;
 
@@ -927,6 +936,7 @@
                         else if (key.includes('右')) action = 'move:right';
                         else if (key.includes('止')) action = 'move:stop';
 
+                        console.log('🤖 [Fallback] Matched key:', key, 'Action:', action);
                         break;
                     }
                 }
@@ -935,17 +945,25 @@
 
                 // Execute action
                 if (action) {
+                    console.log('🤖 [Fallback] Executing action:', action);
                     this.executeAction(action);
+                } else {
+                    console.log('🤖 [Fallback] No action matched');
                 }
             }
 
             executeAction(actionStr) {
+                console.log('🤖 [AI] Executing action:', actionStr);
                 setTimeout(() => {
                     if (actionStr.startsWith('move:')) {
                         const direction = actionStr.split(':')[1];
                         robot.move(direction);
                     } else if (['dance', 'jump', 'spin', 'wave'].includes(actionStr)) {
+                        console.log('🤖 [AI] Calling robot action:', actionStr);
                         robot[actionStr]();
+                        console.log('🤖 [AI] Action count after:', robot.actionCount);
+                    } else {
+                        console.warn('🤖 [AI] Unknown action:', actionStr);
                     }
                 }, 800);
             }
