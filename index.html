@@ -290,11 +290,16 @@
                     <details>
                         <summary style="cursor: pointer; color: #d63031;">⚙️ AI設定</summary>
                         <div style="margin-top: 10px; background: white; padding: 10px; border-radius: 5px;">
+                            <div id="apiStatus" style="margin-bottom: 10px; padding: 8px; border-radius: 5px; font-size: 0.85em;"></div>
                             <label style="display: block; margin-bottom: 5px; color: #333;">OpenAI APIキー:</label>
                             <input type="password" id="apiKey" placeholder="sk-..."
                                    style="width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.9em;">
-                            <button class="action-btn" style="width: 100%; margin-top: 5px; font-size: 0.8em;"
-                                    onclick="aiController.saveApiKey()">保存</button>
+                            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                <button class="action-btn" style="flex: 1; font-size: 0.8em;"
+                                        onclick="aiController.saveApiKey()">保存</button>
+                                <button class="action-btn" style="flex: 1; font-size: 0.8em; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);"
+                                        onclick="aiController.clearApiKey()">削除</button>
+                            </div>
                             <div style="color: #666; font-size: 0.75em; margin-top: 5px;">
                                 ⚠️ セキュリティ注意: ローカル環境での使用を推奨
                             </div>
@@ -975,6 +980,7 @@
                 this.apiKey = localStorage.getItem('openai_api_key') || '';
                 this.conversationHistory = [];
                 this.isProcessing = false;
+                this.updateApiStatus();
 
                 // Fallback responses for when API is not configured
                 this.responses = {
@@ -1045,17 +1051,85 @@
 会話は短く、楽しく、子供が理解しやすいように答えてください。`;
             }
 
-            saveApiKey() {
+            updateApiStatus() {
+                const statusDiv = document.getElementById('apiStatus');
+                if (!statusDiv) return;
+
+                if (this.apiKey) {
+                    const maskedKey = this.apiKey.substring(0, 7) + '...' + this.apiKey.substring(this.apiKey.length - 4);
+                    statusDiv.innerHTML = `✅ <strong>APIキー設定済み</strong><br><span style="font-size: 0.9em; color: #666;">${maskedKey}</span>`;
+                    statusDiv.style.background = '#d4edda';
+                    statusDiv.style.border = '1px solid #c3e6cb';
+                    statusDiv.style.color = '#155724';
+                } else {
+                    statusDiv.innerHTML = '❌ <strong>APIキー未設定</strong><br><span style="font-size: 0.9em;">パターンマッチングモードで動作します</span>';
+                    statusDiv.style.background = '#fff3cd';
+                    statusDiv.style.border = '1px solid #ffeaa7';
+                    statusDiv.style.color = '#856404';
+                }
+            }
+
+            clearApiKey() {
+                if (confirm('APIキーを削除しますか？')) {
+                    this.apiKey = '';
+                    localStorage.removeItem('openai_api_key');
+                    this.conversationHistory = [];
+                    this.updateApiStatus();
+                    this.addMessage('🗑️ APIキーを削除しました。パターンマッチングモードで動作します。');
+                }
+            }
+
+            async saveApiKey() {
                 const apiKeyInput = document.getElementById('apiKey');
                 const apiKey = apiKeyInput.value.trim();
 
-                if (apiKey) {
-                    this.apiKey = apiKey;
-                    localStorage.setItem('openai_api_key', apiKey);
-                    this.addMessage('✅ APIキーが保存されました！実際のAIと会話できます！');
-                    apiKeyInput.value = '';
-                } else {
+                if (!apiKey) {
                     this.addMessage('❌ APIキーを入力してください');
+                    return;
+                }
+
+                // Validate API key format
+                if (!apiKey.startsWith('sk-')) {
+                    this.addMessage('❌ 無効なAPIキー形式です。OpenAI APIキーは "sk-" で始まります');
+                    return;
+                }
+
+                // Test the API key
+                this.addMessage('🔍 APIキーをテスト中...');
+
+                try {
+                    const response = await fetch('https://api.openai.com/v1/models', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.apiKey = apiKey;
+                        localStorage.setItem('openai_api_key', apiKey);
+                        this.updateApiStatus();
+                        this.addMessage('✅ APIキーが保存されました！実際のAIと会話できます！');
+                        apiKeyInput.value = '';
+                    } else if (response.status === 401) {
+                        this.addMessage('❌ 認証エラー: APIキーが無効です');
+                    } else if (response.status === 429) {
+                        this.addMessage('❌ レート制限エラー: しばらく待ってから再試行してください');
+                    } else {
+                        this.addMessage(`❌ APIエラー (${response.status}): ${response.statusText}`);
+                    }
+                } catch (error) {
+                    // CORS error or network error
+                    if (error.message.includes('CORS') || error.name === 'TypeError') {
+                        this.addMessage('⚠️ CORS制限のため検証できませんでしたが、APIキーを保存しました');
+                        this.addMessage('💡 ヒント: ローカルサーバー (http-server等) で実行するか、ブラウザ拡張でCORSを無効化してください');
+                        this.apiKey = apiKey;
+                        localStorage.setItem('openai_api_key', apiKey);
+                        this.updateApiStatus();
+                        apiKeyInput.value = '';
+                    } else {
+                        this.addMessage(`❌ ネットワークエラー: ${error.message}`);
+                    }
                 }
             }
 
@@ -1120,7 +1194,18 @@
                     });
 
                     if (!response.ok) {
-                        throw new Error(`API Error: ${response.status}`);
+                        const errorData = await response.json().catch(() => ({}));
+                        const errorMessage = errorData.error?.message || response.statusText;
+
+                        if (response.status === 401) {
+                            throw new Error('401: 認証エラー - APIキーが無効です');
+                        } else if (response.status === 429) {
+                            throw new Error('429: レート制限 - API使用回数の上限に達しました');
+                        } else if (response.status === 500 || response.status === 503) {
+                            throw new Error(`${response.status}: サーバーエラー - ${errorMessage}`);
+                        } else {
+                            throw new Error(`${response.status}: ${errorMessage}`);
+                        }
                     }
 
                     const data = await response.json();
@@ -1161,9 +1246,25 @@
                         chatBox.removeChild(chatBox.lastChild);
                     }
 
-                    this.addMessage('❌ エラー: AI接続に失敗しました。APIキーを確認してください。');
+                    // More detailed error messages
+                    if (error.message.includes('CORS') || error.name === 'TypeError') {
+                        this.addMessage('❌ CORS エラー: ブラウザのセキュリティ制限によりAPIにアクセスできません');
+                        this.addMessage('💡 解決方法:');
+                        this.addMessage('  1. ローカルサーバーで実行 (例: python -m http.server 8000)');
+                        this.addMessage('  2. ブラウザ拡張でCORSを無効化');
+                        this.addMessage('  3. プロキシサーバーを使用');
+                    } else if (error.message.includes('401')) {
+                        this.addMessage('❌ 認証エラー: APIキーが無効です。設定を確認してください');
+                    } else if (error.message.includes('429')) {
+                        this.addMessage('❌ レート制限: API使用回数の上限に達しました。しばらく待ってください');
+                    } else if (error.message.includes('500') || error.message.includes('503')) {
+                        this.addMessage('❌ サーバーエラー: OpenAI側で問題が発生しています。後で再試行してください');
+                    } else {
+                        this.addMessage(`❌ エラー: ${error.message}`);
+                    }
 
                     // Fallback to pattern matching
+                    this.addMessage('🤖 パターンマッチングモードで応答します');
                     this.processCommandFallback(command);
                 }
             }
