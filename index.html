@@ -346,21 +346,52 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
 
-                // Robot body
+                // Robot legs (脚)
                 ctx.fillStyle = '#667eea';
-                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                ctx.strokeStyle = '#5568d3';
+                ctx.lineWidth = 2;
+
+                // Left leg
+                ctx.fillRect(-20, this.size/2 - 10, 15, 35);
+                ctx.strokeRect(-20, this.size/2 - 10, 15, 35);
+
+                // Right leg
+                ctx.fillRect(5, this.size/2 - 10, 15, 35);
+                ctx.strokeRect(5, this.size/2 - 10, 15, 35);
+
+                // Feet
+                ctx.fillStyle = '#764ba2';
+                ctx.fillRect(-25, this.size/2 + 25, 20, 8);
+                ctx.fillRect(5, this.size/2 + 25, 20, 8);
+
+                // Robot body (胴体 - torso)
+                ctx.fillStyle = '#667eea';
+                ctx.fillRect(-this.size/2, -5, this.size, 35);
                 ctx.strokeStyle = '#5568d3';
                 ctx.lineWidth = 3;
-                ctx.strokeRect(-this.size/2, -this.size/2, this.size, this.size);
+                ctx.strokeRect(-this.size/2, -5, this.size, 35);
+
+                // Body panel details
+                ctx.fillStyle = '#8b9bef';
+                ctx.fillRect(-this.size/2 + 5, 0, this.size - 10, 5);
+                ctx.fillRect(-this.size/2 + 5, 10, this.size - 10, 5);
+                ctx.fillRect(-this.size/2 + 5, 20, this.size - 10, 5);
+
+                // Robot head (頭)
+                ctx.fillStyle = '#667eea';
+                ctx.fillRect(-25, -this.size/2, 50, 40);
+                ctx.strokeStyle = '#5568d3';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(-25, -this.size/2, 50, 40);
 
                 // Robot eyes
                 ctx.fillStyle = 'white';
-                ctx.fillRect(-20, -15, 15, 15);
-                ctx.fillRect(5, -15, 15, 15);
+                ctx.fillRect(-20, -this.size/2 + 8, 15, 15);
+                ctx.fillRect(5, -this.size/2 + 8, 15, 15);
 
                 ctx.fillStyle = 'black';
-                ctx.fillRect(-15, -10, 8, 8);
-                ctx.fillRect(10, -10, 8, 8);
+                ctx.fillRect(-15, -this.size/2 + 13, 8, 8);
+                ctx.fillRect(10, -this.size/2 + 13, 8, 8);
 
                 // Robot antenna
                 ctx.strokeStyle = '#764ba2';
@@ -379,13 +410,30 @@
                 ctx.strokeStyle = '#333';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.arc(0, 5, 15, 0, Math.PI);
+                ctx.arc(0, -this.size/2 + 28, 15, 0, Math.PI);
                 ctx.stroke();
 
-                // Robot arms
+                // Robot arms (腕)
                 ctx.fillStyle = '#667eea';
-                ctx.fillRect(-this.size/2 - 10, -10, 10, 30);
-                ctx.fillRect(this.size/2, -10, 10, 30);
+                ctx.strokeStyle = '#5568d3';
+                ctx.lineWidth = 2;
+
+                // Left arm
+                ctx.fillRect(-this.size/2 - 12, -5, 12, 30);
+                ctx.strokeRect(-this.size/2 - 12, -5, 12, 30);
+
+                // Right arm
+                ctx.fillRect(this.size/2, -5, 12, 30);
+                ctx.strokeRect(this.size/2, -5, 12, 30);
+
+                // Hands
+                ctx.fillStyle = '#764ba2';
+                ctx.beginPath();
+                ctx.arc(-this.size/2 - 6, 28, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.size/2 + 6, 28, 6, 0, Math.PI * 2);
+                ctx.fill();
 
                 ctx.restore();
 
