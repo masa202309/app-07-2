@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キッズロボット シミュレーター 🤖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .simulation-area {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            flex: 1;
+            min-width: 600px;
+        }
+
+        #canvas {
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            display: block;
+            background: #f0f4ff;
+            cursor: crosshair;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-section {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e7ff;
+        }
+
+        .control-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 15px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .ai-section {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #fdcb6e;
+        }
+
+        .ai-section h3 {
+            color: #d63031;
+        }
+
+        .chat-box {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 100px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin: 10px 0;
+            border: 2px solid #fdcb6e;
+        }
+
+        .robot-message {
+            background: #e3f2fd;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 5px 0;
+            font-size: 0.9em;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .command-input {
+            display: flex;
+            gap: 5px;
+        }
+
+        .command-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #fdcb6e;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        #robotEmotion {
+            font-size: 3em;
+            text-align: center;
+            margin: 10px 0;
+            animation: bounce 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinning {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 キッズロボット シミュレーター 🤖</h1>
+        <p>ロボットを動かして遊ぼう！</p>
+    </div>
+
+    <div class="container">
+        <div class="simulation-area">
+            <canvas id="canvas" width="600" height="600"></canvas>
+        </div>
+
+        <div class="control-panel">
+            <div class="control-section">
+                <h3>🎮 ロボットを動かそう</h3>
+                <div class="button-grid">
+                    <div></div>
+                    <button class="control-btn" onclick="robot.move('up')">⬆️</button>
+                    <div></div>
+                    <button class="control-btn" onclick="robot.move('left')">⬅️</button>
+                    <button class="control-btn" onclick="robot.move('stop')">⏹️</button>
+                    <button class="control-btn" onclick="robot.move('right')">➡️</button>
+                    <div></div>
+                    <button class="control-btn" onclick="robot.move('down')">⬇️</button>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>✨ アクション</h3>
+                <button class="action-btn" onclick="robot.dance()">💃 ダンス</button>
+                <button class="action-btn" onclick="robot.jump()">🦘 ジャンプ</button>
+                <button class="action-btn" onclick="robot.spin()">🌀 回転</button>
+                <button class="action-btn" onclick="robot.wave()">👋 手を振る</button>
+            </div>
+
+            <div class="ai-section">
+                <h3>🧠 AIロボットと話そう</h3>
+                <div id="robotEmotion">😊</div>
+                <div class="chat-box" id="chatBox"></div>
+                <div class="command-input">
+                    <input type="text" id="aiCommand" placeholder="ロボットに命令してね！"
+                           onkeypress="if(event.key==='Enter') aiController.sendCommand()">
+                    <button class="action-btn" onclick="aiController.sendCommand()">送信</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>📊 ステータス</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-label">移動回数</div>
+                        <div class="stat-value" id="moveCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">アクション</div>
+                        <div class="stat-value" id="actionCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">エネルギー</div>
+                        <div class="stat-value" id="energy">100%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">気分</div>
+                        <div class="stat-value" id="mood">最高!</div>
+                    </div>
+                </div>
+                <button class="action-btn" style="width: 100%; margin-top: 10px;"
+                        onclick="robot.reset()">🔄 リセット</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Robot class
+        class Robot {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                this.size = 60;
+                this.angle = 0;
+                this.speed = 5;
+                this.moveCount = 0;
+                this.actionCount = 0;
+                this.energy = 100;
+                this.mood = '😊';
+                this.trail = [];
+                this.particles = [];
+                this.isAnimating = false;
+            }
+
+            draw() {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw grid
+                this.drawGrid();
+
+                // Draw trail
+                this.drawTrail();
+
+                // Draw particles
+                this.drawParticles();
+
+                // Draw robot
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Robot body
+                ctx.fillStyle = '#667eea';
+                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                ctx.strokeStyle = '#5568d3';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(-this.size/2, -this.size/2, this.size, this.size);
+
+                // Robot eyes
+                ctx.fillStyle = 'white';
+                ctx.fillRect(-20, -15, 15, 15);
+                ctx.fillRect(5, -15, 15, 15);
+
+                ctx.fillStyle = 'black';
+                ctx.fillRect(-15, -10, 8, 8);
+                ctx.fillRect(10, -10, 8, 8);
+
+                // Robot antenna
+                ctx.strokeStyle = '#764ba2';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size/2);
+                ctx.lineTo(0, -this.size/2 - 15);
+                ctx.stroke();
+
+                ctx.fillStyle = '#f5576c';
+                ctx.beginPath();
+                ctx.arc(0, -this.size/2 - 15, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Robot mouth
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 5, 15, 0, Math.PI);
+                ctx.stroke();
+
+                // Robot arms
+                ctx.fillStyle = '#667eea';
+                ctx.fillRect(-this.size/2 - 10, -10, 10, 30);
+                ctx.fillRect(this.size/2, -10, 10, 30);
+
+                ctx.restore();
+
+                // Update particles
+                this.particles = this.particles.filter(p => {
+                    p.update();
+                    return p.life > 0;
+                });
+            }
+
+            drawGrid() {
+                ctx.strokeStyle = '#e0e7ff';
+                ctx.lineWidth = 1;
+                const gridSize = 50;
+
+                for (let x = 0; x < canvas.width; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            }
+
+            drawTrail() {
+                if (this.trail.length < 2) return;
+
+                ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(this.trail[0].x, this.trail[0].y);
+
+                for (let i = 1; i < this.trail.length; i++) {
+                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                }
+
+                ctx.stroke();
+            }
+
+            drawParticles() {
+                this.particles.forEach(p => {
+                    ctx.fillStyle = `rgba(${p.color}, ${p.life})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            move(direction) {
+                this.trail.push({x: this.x, y: this.y});
+                if (this.trail.length > 50) {
+                    this.trail.shift();
+                }
+
+                switch(direction) {
+                    case 'up':
+                        this.y = Math.max(this.size/2, this.y - this.speed * 5);
+                        this.angle = -Math.PI / 2;
+                        break;
+                    case 'down':
+                        this.y = Math.min(canvas.height - this.size/2, this.y + this.speed * 5);
+                        this.angle = Math.PI / 2;
+                        break;
+                    case 'left':
+                        this.x = Math.max(this.size/2, this.x - this.speed * 5);
+                        this.angle = Math.PI;
+                        break;
+                    case 'right':
+                        this.x = Math.min(canvas.width - this.size/2, this.x + this.speed * 5);
+                        this.angle = 0;
+                        break;
+                    case 'stop':
+                        this.createParticles(20);
+                        break;
+                }
+
+                this.moveCount++;
+                this.updateStats();
+                this.draw();
+                this.playSound('move');
+            }
+
+            dance() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 20) {
+                        this.angle += Math.PI / 10;
+                        this.createParticles(5);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.isAnimating = false;
+                    }
+                };
+                animate();
+
+                this.updateMood('🎉');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            jump() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+
+                let frame = 0;
+                const startY = this.y;
+                const animate = () => {
+                    if (frame < 20) {
+                        this.y = startY - Math.sin((frame / 20) * Math.PI) * 50;
+                        this.createParticles(3);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.y = startY;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('🦘');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            spin() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 30) {
+                        this.angle += Math.PI / 15;
+                        this.createParticles(8);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.isAnimating = false;
+                    }
+                };
+                animate();
+
+                this.updateMood('🌀');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            wave() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 10) {
+                        this.angle = Math.sin(frame / 2) * 0.3;
+                        this.createParticles(2);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('👋');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            createParticles(count) {
+                for (let i = 0; i < count; i++) {
+                    this.particles.push(new Particle(this.x, this.y));
+                }
+            }
+
+            updateMood(emoji) {
+                this.mood = emoji;
+                document.getElementById('robotEmotion').textContent = emoji;
+                document.getElementById('robotEmotion').style.animation = 'none';
+                setTimeout(() => {
+                    document.getElementById('robotEmotion').style.animation = 'bounce 0.5s';
+                }, 10);
+
+                setTimeout(() => {
+                    this.mood = '😊';
+                    document.getElementById('robotEmotion').textContent = '😊';
+                }, 2000);
+            }
+
+            updateStats() {
+                document.getElementById('moveCount').textContent = this.moveCount;
+                document.getElementById('actionCount').textContent = this.actionCount;
+
+                this.energy = Math.max(10, 100 - (this.moveCount + this.actionCount * 2));
+                document.getElementById('energy').textContent = this.energy + '%';
+
+                const moods = ['最高!', '元気!', 'いい感じ', '楽しい!', 'ハッピー!'];
+                document.getElementById('mood').textContent = moods[Math.floor(Math.random() * moods.length)];
+            }
+
+            playSound(type) {
+                // Simple sound using Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                if (type === 'move') {
+                    oscillator.frequency.value = 440;
+                    gainNode.gain.value = 0.1;
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                } else if (type === 'action') {
+                    oscillator.frequency.value = 880;
+                    gainNode.gain.value = 0.1;
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                }
+            }
+
+            reset() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                this.angle = 0;
+                this.moveCount = 0;
+                this.actionCount = 0;
+                this.energy = 100;
+                this.trail = [];
+                this.particles = [];
+                this.updateStats();
+                this.updateMood('😊');
+                this.draw();
+                aiController.addMessage('リセットしたよ！また遊ぼう！ 🔄');
+            }
+        }
+
+        // Particle class for effects
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.life = 1;
+                this.size = Math.random() * 5 + 2;
+                const colors = ['102,126,234', '118,75,162', '245,87,108', '240,147,251'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+                this.size *= 0.98;
+            }
+        }
+
+        // AI Controller with simple pattern matching
+        class AIController {
+            constructor() {
+                this.responses = {
+                    'こんにちは': ['こんにちは！遊ぼうよ！ 😊', 'やあ！元気？ 🤖', 'ハロー！今日は何して遊ぶ？ 👋'],
+                    '踊': ['わかった！踊るよ！ 💃', 'ダンスタイムだ！ 🎉', '見ててね！ 🌟'],
+                    'ジャンプ': ['ジャンプするよ！ 🦘', '高く飛ぶよ！ ⬆️', 'よいしょ！ 💪'],
+                    '回': ['くるくる回るよ！ 🌀', 'スピンだ！ 🔄', '回転開始！ ⭐'],
+                    '手': ['手を振るね！ 👋', 'ハーイ！ 🙋', 'やあやあ！ ✨'],
+                    '進': ['前に進むよ！ ➡️', 'レッツゴー！ 🚀', 'しゅっぱーつ！ 🏃'],
+                    '上': ['上に行くよ！ ⬆️', '上昇！ 🚁'],
+                    '下': ['下に行くよ！ ⬇️', '降下！ 🪂'],
+                    '左': ['左に行くよ！ ⬅️', '左折！ 🔄'],
+                    '右': ['右に行くよ！ ➡️', '右折！ 🔄'],
+                    '止': ['止まった！ ⏹️', 'ストップ！ 🛑'],
+                    'ありがとう': ['どういたしまして！ 😊', 'またね！ 👋', '楽しかったね！ 🎉'],
+                    '元気': ['元気だよ！ 💪', '最高だよ！ ⭐', 'バッチリ！ 👍'],
+                    '疲': ['まだ大丈夫！ 💪', '全然平気！ 😊', 'もっと遊ぼう！ 🎮']
+                };
+            }
+
+            sendCommand() {
+                const input = document.getElementById('aiCommand');
+                const command = input.value.trim();
+
+                if (!command) return;
+
+                this.addMessage('あなた: ' + command);
+                input.value = '';
+
+                // Process command with AI
+                setTimeout(() => {
+                    this.processCommand(command);
+                }, 500);
+            }
+
+            processCommand(command) {
+                // Pattern matching for responses
+                let response = 'それ面白そう！やってみるよ！ ✨';
+                let action = null;
+
+                for (let key in this.responses) {
+                    if (command.includes(key)) {
+                        const responses = this.responses[key];
+                        response = responses[Math.floor(Math.random() * responses.length)];
+
+                        // Trigger corresponding action
+                        if (key.includes('踊')) action = 'dance';
+                        else if (key.includes('ジャンプ')) action = 'jump';
+                        else if (key.includes('回')) action = 'spin';
+                        else if (key.includes('手')) action = 'wave';
+                        else if (key.includes('上')) action = 'up';
+                        else if (key.includes('下')) action = 'down';
+                        else if (key.includes('左')) action = 'left';
+                        else if (key.includes('右')) action = 'right';
+                        else if (key.includes('止')) action = 'stop';
+
+                        break;
+                    }
+                }
+
+                this.addMessage('🤖 ロボット: ' + response);
+
+                // Execute action
+                if (action) {
+                    setTimeout(() => {
+                        if (['up', 'down', 'left', 'right', 'stop'].includes(action)) {
+                            robot.move(action);
+                        } else {
+                            robot[action]();
+                        }
+                    }, 800);
+                }
+            }
+
+            addMessage(message) {
+                const chatBox = document.getElementById('chatBox');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'robot-message';
+                messageDiv.textContent = message;
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Keep only last 10 messages
+                while (chatBox.children.length > 10) {
+                    chatBox.removeChild(chatBox.firstChild);
+                }
+            }
+        }
+
+        // Initialize
+        const robot = new Robot();
+        const aiController = new AIController();
+
+        // Initial draw
+        robot.draw();
+
+        // Welcome message
+        aiController.addMessage('🤖 ロボット: こんにちは！僕はAIロボットだよ！一緒に遊ぼう！ 😊');
+        aiController.addMessage('🤖 ロボット: 命令してくれたら動くよ！「ジャンプして」とか「踊って」って言ってね！ 💃');
+
+        // Click to move robot
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const targetX = e.clientX - rect.left;
+            const targetY = e.clientY - rect.top;
+
+            const animate = () => {
+                const dx = targetX - robot.x;
+                const dy = targetY - robot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 5) {
+                    robot.x += (dx / distance) * robot.speed;
+                    robot.y += (dy / distance) * robot.speed;
+                    robot.angle = Math.atan2(dy, dx);
+                    robot.trail.push({x: robot.x, y: robot.y});
+                    if (robot.trail.length > 50) robot.trail.shift();
+                    robot.moveCount++;
+                    robot.updateStats();
+                    robot.draw();
+                    requestAnimationFrame(animate);
+                }
+            };
+
+            animate();
+            robot.playSound('move');
+            aiController.addMessage('🤖 ロボット: そこに行くね！ 🚀');
+        });
+
+        // Animation loop for smooth rendering
+        function gameLoop() {
+            robot.draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
