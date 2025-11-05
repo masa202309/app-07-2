@@ -267,6 +267,14 @@
                 <button class="action-btn" onclick="robot.jump()">🦘 ジャンプ</button>
                 <button class="action-btn" onclick="robot.spin()">🌀 回転</button>
                 <button class="action-btn" onclick="robot.wave()">👋 手を振る</button>
+                <button class="action-btn" onclick="robot.laugh()">😄 笑う</button>
+                <button class="action-btn" onclick="robot.stretch()">🙆 伸びる</button>
+                <button class="action-btn" onclick="robot.hug()">🤗 ハグ</button>
+                <button class="action-btn" onclick="robot.bow()">🙇 お辞儀</button>
+                <button class="action-btn" onclick="robot.clap()">👏 拍手</button>
+                <button class="action-btn" onclick="robot.stargaze()">⭐ 星を見る</button>
+                <button class="action-btn" onclick="robot.think()">🤔 考える</button>
+                <button class="action-btn" onclick="robot.celebrate()">🎊 喜ぶ</button>
             </div>
 
             <div class="ai-section">
@@ -644,6 +652,233 @@
                 this.playSound('action');
             }
 
+            laugh() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('😄 [Robot] Laugh action! Count:', this.actionCount);
+
+                let frame = 0;
+                const startY = this.y;
+                const animate = () => {
+                    if (frame < 16) {
+                        this.y = startY + Math.sin(frame * 0.8) * 5;
+                        this.angle = Math.sin(frame * 0.8) * 0.1;
+                        this.createParticles(4);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.y = startY;
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('😄');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            stretch() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('🙆 [Robot] Stretch action! Count:', this.actionCount);
+
+                let frame = 0;
+                const startSize = this.size;
+                const animate = () => {
+                    if (frame < 20) {
+                        this.size = startSize + Math.sin((frame / 20) * Math.PI) * 10;
+                        this.createParticles(3);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.size = startSize;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('🙆');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            hug() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('🤗 [Robot] Hug action! Count:', this.actionCount);
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 15) {
+                        this.angle = Math.sin(frame / 3) * 0.2;
+                        this.createParticles(6);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('🤗');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            bow() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('🙇 [Robot] Bow action! Count:', this.actionCount);
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 20) {
+                        if (frame < 10) {
+                            this.angle = (frame / 10) * (Math.PI / 4);
+                        } else {
+                            this.angle = ((20 - frame) / 10) * (Math.PI / 4);
+                        }
+                        this.createParticles(2);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('🙇');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            clap() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('👏 [Robot] Clap action! Count:', this.actionCount);
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 12) {
+                        this.angle = (frame % 3 === 0) ? 0.1 : -0.1;
+                        if (frame % 3 === 0) this.createParticles(8);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('👏');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            stargaze() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('⭐ [Robot] Stargaze action! Count:', this.actionCount);
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 25) {
+                        this.angle = -Math.PI / 6;
+                        this.createParticles(4);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('⭐');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            think() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('🤔 [Robot] Think action! Count:', this.actionCount);
+
+                let frame = 0;
+                const animate = () => {
+                    if (frame < 20) {
+                        this.angle = Math.sin(frame / 4) * 0.15;
+                        if (frame % 4 === 0) this.createParticles(3);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('🤔');
+                this.updateStats();
+                this.playSound('action');
+            }
+
+            celebrate() {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+                this.actionCount++;
+                console.log('🎊 [Robot] Celebrate action! Count:', this.actionCount);
+
+                let frame = 0;
+                const startY = this.y;
+                const animate = () => {
+                    if (frame < 30) {
+                        this.y = startY - Math.abs(Math.sin((frame / 30) * Math.PI * 2)) * 30;
+                        this.angle += Math.PI / 8;
+                        this.createParticles(10);
+                        this.draw();
+                        frame++;
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.y = startY;
+                        this.angle = 0;
+                        this.isAnimating = false;
+                        this.draw();
+                    }
+                };
+                animate();
+
+                this.updateMood('🎊');
+                this.updateStats();
+                this.playSound('action');
+            }
+
             createParticles(count) {
                 for (let i = 0; i < count; i++) {
                     this.particles.push(new Particle(this.x, this.y));
@@ -748,6 +983,14 @@
                     'ジャンプ': ['ジャンプするよ！ 🦘', '高く飛ぶよ！ ⬆️', 'よいしょ！ 💪'],
                     '回': ['くるくる回るよ！ 🌀', 'スピンだ！ 🔄', '回転開始！ ⭐'],
                     '手': ['手を振るね！ 👋', 'ハーイ！ 🙋', 'やあやあ！ ✨'],
+                    '笑': ['あはは！面白いね！ 😄', '笑っちゃう！ 😆', 'ハッピー！ 😁'],
+                    '伸': ['伸びをするよ！ 🙆', 'すーっと伸びる！ ✨', 'ストレッチ！ 💪'],
+                    'ハグ': ['ぎゅーってするよ！ 🤗', 'ハグハグ！ 💕', '大好き！ 🥰'],
+                    'お辞儀': ['お辞儀するね！ 🙇', '礼儀正しく！ ✨', 'よろしくね！ 🎩'],
+                    '拍手': ['パチパチ！ 👏', '拍手するよ！ 👏', 'すごいね！ 🎊'],
+                    '星': ['星を見上げるよ！ ⭐', 'キラキラだね！ ✨', '綺麗だな～ 🌟'],
+                    '考': ['う～ん、考えるよ！ 🤔', 'どうしようかな～ 💭', '悩むね！ 🧠'],
+                    '喜': ['やったー！ 🎊', '嬉しい！ 🎉', '最高！ 🥳'],
                     '進': ['前に進むよ！ ➡️', 'レッツゴー！ 🚀', 'しゅっぱーつ！ 🏃'],
                     '上': ['上に行くよ！ ⬆️', '上昇！ 🚁'],
                     '下': ['下に行くよ！ ⬇️', '降下！ 🪂'],
@@ -772,6 +1015,14 @@
 - jump（ジャンプ）
 - spin（回転）
 - wave（手を振る）
+- laugh（笑う）
+- stretch（伸びをする）
+- hug（ハグ）
+- bow（お辞儀）
+- clap（拍手）
+- stargaze（星を見る）
+- think（考える）
+- celebrate（喜ぶ）
 - move:up（上に移動）
 - move:down（下に移動）
 - move:left（左に移動）
@@ -787,6 +1038,9 @@
 
 ユーザー: 「上に行って」
 ロボット: 「上に行くね！ ⬆️ [ACTION:move:up]」
+
+ユーザー: 「笑って！」
+ロボット: 「あはは！楽しいね！ 😄 [ACTION:laugh]」
 
 会話は短く、楽しく、子供が理解しやすいように答えてください。`;
             }
@@ -930,6 +1184,14 @@
                         else if (key.includes('ジャンプ')) action = 'jump';
                         else if (key.includes('回')) action = 'spin';
                         else if (key.includes('手')) action = 'wave';
+                        else if (key.includes('笑')) action = 'laugh';
+                        else if (key.includes('伸')) action = 'stretch';
+                        else if (key.includes('ハグ')) action = 'hug';
+                        else if (key.includes('お辞儀')) action = 'bow';
+                        else if (key.includes('拍手')) action = 'clap';
+                        else if (key.includes('星')) action = 'stargaze';
+                        else if (key.includes('考')) action = 'think';
+                        else if (key.includes('喜')) action = 'celebrate';
                         else if (key.includes('上')) action = 'move:up';
                         else if (key.includes('下')) action = 'move:down';
                         else if (key.includes('左')) action = 'move:left';
@@ -958,7 +1220,7 @@
                     if (actionStr.startsWith('move:')) {
                         const direction = actionStr.split(':')[1];
                         robot.move(direction);
-                    } else if (['dance', 'jump', 'spin', 'wave'].includes(actionStr)) {
+                    } else if (['dance', 'jump', 'spin', 'wave', 'laugh', 'stretch', 'hug', 'bow', 'clap', 'stargaze', 'think', 'celebrate'].includes(actionStr)) {
                         console.log('🤖 [AI] Calling robot action:', actionStr);
                         robot[actionStr]();
                         console.log('🤖 [AI] Action count after:', robot.actionCount);
